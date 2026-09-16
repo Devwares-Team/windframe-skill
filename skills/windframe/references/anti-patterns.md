@@ -1,6 +1,6 @@
-# Windframe MCP Anti-Patterns
+# Windframe HTTP API Anti-Patterns
 
-Use this checklist to avoid behavior that violates the Windframe MCP workflow.
+Use this checklist to avoid behavior that violates the Windframe API workflow.
 
 ---
 
@@ -19,27 +19,25 @@ when the user did not choose those values.
 
 Fix:
 
-1. Read `windframe://styles`.
-2. Read `windframe://themes`.
+1. Call `GET /ui-styles`.
+2. Present the available styles and practical color options.
 3. Recommend suitable pairings.
-4. Ask the user to choose `uiStyle` and `primaryColor`.
-5. Retry or call the tool with the selected values.
+4. Ask for missing choices only; retain valid user selections for follow-up edits. Never silently replace an unsupported color.
+5. Call `POST /design-context` with the selected values.
 
 ---
 
-## Skipping The Option Resources
+## Skipping The UI Styles Fetch
 
 Bad:
 
 ```text
-Use a fixed style for a fixed UI category without checking the live resource data.
+Use a fixed style for a fixed UI category without checking the live API.
 ```
-
-without checking what the server currently exposes.
 
 Fix:
 
-Treat `windframe://styles` and `windframe://themes` as authoritative. Local docs can guide recommendations, but resource output controls what can be offered.
+Treat `GET /ui-styles` as authoritative. Local docs can guide recommendations, but the API output controls what can be offered.
 
 ---
 
@@ -48,12 +46,12 @@ Treat `windframe://styles` and `windframe://themes` as authoritative. Local docs
 Bad:
 
 ```text
-Here is your result: windframe://style-context/12345
+Here is your result: { "context": "..." }
 ```
 
 Fix:
 
-Read `windframe://style-context/{context_id}` and use the returned style context to generate or convert UI code in the user's project framework.
+Use the returned `context` and optional `fonts` to generate or convert UI code in the user's project framework.
 
 ---
 
@@ -67,7 +65,7 @@ Bad:
 }
 ```
 
-with `fetch_style_design_context` or `fetch_style_conversion_context`.
+with `POST /design-context`.
 
 Fix:
 
@@ -75,7 +73,7 @@ Use `primaryColor`:
 
 ```json
 {
-  "primaryColor": "[user-selected theme, current, or custom hex]"
+  "primaryColor": "[user-selected color, current, or custom hex]"
 }
 ```
 
@@ -104,20 +102,18 @@ A landing page for a B2B contract management SaaS targeting legal teams. Hero he
 Bad:
 
 ```text
-Convert this dashboard to a specific style, rewrite the product positioning, add pricing, change the nav, and create a mobile app screen.
+The user asked for a visual restyle, so also rewrite the product positioning, add pricing, change navigation, and create a mobile screen.
 ```
 
 Fix:
 
-Separate content changes from style conversion. First clarify or update the UI structure, then use `fetch_style_conversion_context` for the selected target style and color.
+Preserve content and functionality outside the requested scope. If the user explicitly requests structural or content changes alongside restyling, handle them together; ask only when a material ambiguity remains.
 
 ---
 
-## Ignoring Plan Or Credit Errors
+## Ignoring Plan Restrictions
 
-If the tool returns `pro_plan_required`, tell the user the feature requires Windframe Pro and provide `https://windframe.dev/pricing`.
-
-If the tool returns `free_pass_expired`, tell the user their free calls are exhausted and provide `https://windframe.dev/pricing`.
+If the API returns `pro_plan_required`, tell the user the feature requires Windframe Pro and provide `https://windframe.dev/pricing`.
 
 Do not keep retrying the same call without resolving the account state.
 
@@ -140,18 +136,12 @@ If the user did not provide copy, write reasonable copy from their brief and sta
 
 Do not generate React in a Vue project, Vue in a Svelte project, or static HTML inside an existing component app unless the user requested it.
 
-Check project files before writing:
-
-- `.jsx` or `.tsx`: React
-- `.vue`: Vue
-- `.svelte`: Svelte
-- `app/`, `pages/`, or `next.config.*`: Next.js
-- Otherwise, ask or generate framework-neutral HTML only if appropriate
+Check the package manifest, framework configuration, and existing components before writing. File extensions and folders alone do not establish the framework: `.tsx` is not exclusive to React, and `app/` or `pages/` alone does not prove Next.js.
 
 ---
 
 ## Auth Misuse
 
-Authentication happens through MCP OAuth. Do not ask the user for tokens. Do not pass credentials into tool calls.
+Authentication happens through the `Authorization: Bearer` or `x-api-key` header. Never hard-code API keys into project files. Never log or expose keys in output.
 
-Only revisit authentication if the MCP server is missing, disconnected, or returns an authorization error.
+Check for a missing local key before calling the API. Revisit setup when the key is missing, invalid, or the user changes credentials; do not treat network and service failures as proof of a bad key. Follow [authentication.md](authentication.md) for setup and [api.md](api.md) for error handling.

@@ -1,57 +1,39 @@
-# Windframe Skill
+# Windframe Agent Skills
 
-Windframe Skill helps your coding agent build better web interfaces by connecting it to Windframe MCP. Instead of guessing spacing, typography, colors, and component patterns from generic training data, your agent can request live design-system context from Windframe and use it while generating UI in your project.
+Agent skills for [Windframe](https://windframe.dev), the AI-powered web UI builder.
 
-Use it for landing pages, dashboards, admin panels, SaaS screens, marketing pages, UI components, and restyling existing interfaces.
+## Skills
 
-## What It Does
+| Skill | Description |
+| ----- | ----------- |
+| [windframe](./skills/windframe/) | Build, extend, and restyle web interfaces using live Windframe design context |
 
-Windframe Skill gives your agent a workflow for UI generation:
+## Installation
 
-- fetches Windframe style context for design direction
-- recommends useful style and color directions based on your request
-- helps the agent generate production-ready UI in your project
+Browse and install interactively:
 
-## Install
+```bash
+npx skills add https://github.com/Devwares-Team/windframe-skill
+```
 
-Install the skill into your agent's skills directory.
-
-If you use the `skills` CLI:
+Install Windframe directly:
 
 ```bash
 npx skills add https://github.com/Devwares-Team/windframe-skill --skill windframe
 ```
 
-Or clone the skill manually:
+Reload skills or restart the agent after installation. If your agent does not discover the skill, point it at the installed `SKILL.md`.
 
-```bash
-git clone https://github.com/Devwares-Team/windframe-skill ~/.claude/skills/windframe
+## Requirements
 
+- A [Windframe](https://windframe.dev) account with Pro API access.
+- An API key created on your [account page](https://app.windframe.dev/account), available to the agent as `WINDFRAME_API_KEY`. See [key setup](skills/windframe/references/authentication.md) for secure local configuration and future sessions. Never paste keys into chat or commit them.
+
+## Usage
+
+In agents that expose skills as slash commands:
+
+```text
+/windframe create a pricing page
+/windframe redesign this screen
 ```
-
-## Windframe MCP
-
-Windframe MCP is the server behind the skill. It plugs into MCP-compatible coding agents and gives them access to design tokens, Tailwind styling guidance, components, and style context.
-
-The skill is the local instruction layer. Windframe MCP is the live design-system backend.
-
-Official MCP page: https://windframe.dev/mcp
-
-Windframe MCP endpoint: https://mcp.windframe.dev/mcp
-
-
-## What's Inside
-
-`SKILL.md` — core Windframe workflow
-
-- when to use the skill
-- how the agent should read live MCP resources
-- how style and color selection should work
-- how to fetch and apply Windframe style context
-
-Reference guides:
-
-- `references/workflow.md` — end-to-end dynamic workflow
-- `references/tools.md` — MCP resources, tools, parameters, and errors
-- `references/styles.md` — live style and theme selection process
-- `references/anti-patterns.md` — mistakes to avoid
