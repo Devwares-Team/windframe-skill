@@ -33,11 +33,11 @@ The agent must not:
 1. Call `GET /ui-styles`.
 2. Inspect the user's request for UI type, audience, tone, density, content needs, and conversion goals.
 3. Use only the styles returned by the API.
-4. Recommend up to three style/color pairings.
-5. Ask the user to choose both `uiStyle` and `primaryColor`.
-6. Continue only after the user chooses.
+4. If selections are missing, recommend up to three style/color pairings.
+5. Honor valid choices already supplied; ask only for missing or invalid values. Retain selections for follow-up edits unless changed or invalidated.
+6. Continue when both values have valid user selections, including choices already given. Selecting a recommended pairing supplies both values.
 
-If the API response includes style descriptions, best-use cases, tags, or metadata, use that information to make recommendations. If the response only contains names, make cautious recommendations from the names and ask the user to confirm.
+If the API response includes style descriptions, best-use cases, tags, or metadata, use that information to make recommendations. If the response only contains names, make cautious recommendations from the names only when a choice is still needed.
 
 ---
 
@@ -69,7 +69,7 @@ If `GET /ui-styles` returns only style names:
 - Do not invent detailed style behavior.
 - Use obvious naming cues only when they are clear.
 - Present options neutrally when names are ambiguous.
-- Ask the user which direction they prefer.
+- Ask which direction they prefer only if they have not already selected a valid style.
 
 Example:
 
@@ -81,10 +81,10 @@ The style endpoint returned names but no descriptions. I can make a cautious rec
 
 ## Color Handling
 
-`primaryColor` must be chosen by the user. Valid values:
+`primaryColor` must be chosen by the user. Color inputs:
 
-- **A Tailwind color name**: e.g. `blue`, `emerald`, `violet`, `rose`, `amber`, `cyan`, `slate`, etc. Any standard Tailwind CSS color is accepted.
-- **`"current"`**: inherits the project's existing primary color. Use this when the user wants to keep their current color scheme.
+- **A Tailwind color name**: e.g. `blue`, `emerald`, `violet`, `rose`, `amber`, `cyan`, `slate`, etc. Do not assume every downstream style supports every color.
+- **`"current"`**: requests the project's existing primary color; include its actual palette in the prompt when available. Use this when the user wants to keep their current color scheme.
 - **A custom hex value**: e.g. `"#3b82f6"`. Use this when the user has a specific brand color.
 
-Do not invent unavailable color names. If the API or the user's project does not support a given color, fall back to a standard Tailwind color.
+The HTTP route forwards nonempty color strings; universal Tailwind/hex support and `current` inheritance have not been verified downstream. Preserve explicit selections unless known invalid. If a color is unsupported, explain the limitation and ask for a valid alternative. Never silently substitute another color. A generic service failure is not evidence that the color is unsupported.

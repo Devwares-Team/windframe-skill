@@ -22,7 +22,7 @@ Fix:
 1. Call `GET /ui-styles`.
 2. Present the available styles and practical color options.
 3. Recommend suitable pairings.
-4. Ask the user to choose `uiStyle` and `primaryColor`.
+4. Ask for missing choices only; retain valid user selections for follow-up edits. Never silently replace an unsupported color.
 5. Call `POST /design-context` with the selected values.
 
 ---
@@ -46,7 +46,7 @@ Treat `GET /ui-styles` as authoritative. Local docs can guide recommendations, b
 Bad:
 
 ```text
-Here is your result: { "context": { ... } }
+Here is your result: { "context": "..." }
 ```
 
 Fix:
@@ -102,16 +102,16 @@ A landing page for a B2B contract management SaaS targeting legal teams. Hero he
 Bad:
 
 ```text
-Convert this dashboard to a specific style, rewrite the product positioning, add pricing, change the nav, and create a mobile app screen.
+The user asked for a visual restyle, so also rewrite the product positioning, add pricing, change navigation, and create a mobile screen.
 ```
 
 Fix:
 
-Separate content changes from style conversion. First clarify or update the UI structure, then call `POST /design-context` for the selected target style and color.
+Preserve content and functionality outside the requested scope. If the user explicitly requests structural or content changes alongside restyling, handle them together; ask only when a material ambiguity remains.
 
 ---
 
-## Ignoring Plan Or Credit Errors
+## Ignoring Plan Restrictions
 
 If the API returns `pro_plan_required`, tell the user the feature requires Windframe Pro and provide `https://windframe.dev/pricing`.
 
@@ -136,13 +136,7 @@ If the user did not provide copy, write reasonable copy from their brief and sta
 
 Do not generate React in a Vue project, Vue in a Svelte project, or static HTML inside an existing component app unless the user requested it.
 
-Check project files before writing:
-
-- `.jsx` or `.tsx`: React
-- `.vue`: Vue
-- `.svelte`: Svelte
-- `app/`, `pages/`, or `next.config.*`: Next.js
-- Otherwise, ask or generate framework-neutral HTML only if appropriate
+Check the package manifest, framework configuration, and existing components before writing. File extensions and folders alone do not establish the framework: `.tsx` is not exclusive to React, and `app/` or `pages/` alone does not prove Next.js.
 
 ---
 
@@ -150,4 +144,4 @@ Check project files before writing:
 
 Authentication happens through the `Authorization: Bearer` or `x-api-key` header. Never hard-code API keys into project files. Never log or expose keys in output.
 
-Only revisit authentication if the API returns `missing_api_key` or `invalid_api_key`.
+Check for a missing local key before calling the API. Revisit setup when the key is missing, invalid, or the user changes credentials; do not treat network and service failures as proof of a bad key. Follow [authentication.md](authentication.md) for setup and [api.md](api.md) for error handling.
